@@ -1,0 +1,15 @@
+{
+  "name": "altrone",
+  "version": "4.0.0",
+  "description": "Altrone Workspace",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install-repos": "tsx scripts/install-repositories.ts"
+  },
+  "author": "Alexander Perevezentsev",
+  "license": "MIT",
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  }
+}
