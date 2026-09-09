@@ -10,6 +10,6 @@ This area was explicitly parked ("return to it later"). Treat everything here ex
 
 ## Draft / not confirmed
 
-- Content roles: `title` / `subtitle` / `body` / `caption` / `code`, candidates `display` / `overline` / `legal` / `link` / `numeric` (`tabular-nums`, useful for DataGrid/DataTable/NumberInput).
+- Content roles: `title` / `subtitle` / `body` / `caption` / `code`, candidates `display` / `overline` / `legal` / `link` / `numeric` (`tabular-nums`, useful for DataTable/NumberInput).
 - Control roles: `--text-control-{mini,s,m,l,xl}`, tied 1:1 to component `size` (unlike spacing, reusing the size dictionary was accepted here — text size is physically part of a component's size).
 - Icon `strokeWidth` following `--text-weight` of the same tier (SF Symbols-style sync between icon and adjacent text weight) — idea only, not decided.

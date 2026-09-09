@@ -3,14 +3,14 @@
 `<AltroneApplication>` renders providers in this order (innermost first):
 
 ```
-ThemeContext → AltroneLocalization → Configuration → DialogProvider → Toast → children
+ThemeContext → AltroneLocalization → Configuration → DialogProvider → Notifications → children
 ```
 
 - `ThemeContext` — current theme (`light`/`dark`) + `setTheme`
 - `AltroneLocalization` — i18n dictionary and language
 - `Configuration` — global component style overrides
 - `DialogProvider` — manages the `<Dialog>` portal and its state
-- `Toast` — manages toast notifications
+- `Notifications` — manages the toast + notification stacks
 
 Don't add new global providers outside this chain without discussion.
 

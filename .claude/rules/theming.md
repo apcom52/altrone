@@ -7,6 +7,14 @@
 - Dark mode is toggled via the `data-altrone-theme` attribute.
 - Don't modify `src/components/application/index.css` — it's auto-generated.
 
+## Naming
+
+CSS custom properties are kebab-case: `--component-css-variable-name`. For a variable scoped to one component, the component name comes **first**, then what the variable controls — e.g. `--data-table-cell-text-color`, not `--cell-text-color-data-table` or `--dataTableCellTextColor`.
+
+Global/token-level variables (not scoped to a single component — spacing, radius, elevation, status colors, etc.) skip the component prefix and just name the role: `--space-inline`, `--elevation-modal-shadow`, `--danger-text-1`.
+
+Some existing components still use camelCase (`--dataTableHeaderBackgroundColor`) — legacy, don't copy it into new variables. Not a green light to rename them wholesale either; that's a separate, deliberate cleanup, not something to do opportunistically while touching a file for an unrelated reason.
+
 ## Don't
 
 - Don't use inline styles for colors or typography — use CSS vars + mixins.

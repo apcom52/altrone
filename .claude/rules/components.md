@@ -4,6 +4,8 @@
 
 Each component lives in its own folder under `src/components/<name>/` (camelCase folder name). Full layout — do not deviate:
 
+**Internal-only components** (composed by other components, never part of the public API) live under `src/internal/<name>/` with the exact same layout. They are not re-exported from `src/components/index.ts` and get no `mcp/docs` page; import them via `internal/<name>`. Move a component there when exposing it publicly would only add doc/support surface for no consumer gain (see `src/internal/README.md`).
+
 ```
 ComponentName/
 ├── ComponentName.tsx          # main component
