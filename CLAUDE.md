@@ -56,3 +56,7 @@ When adding a new sub-project to the workspace, add it to `repositories.ts` rath
 @.claude/rules/responsiveness.md
 @.claude/rules/accessibility.md
 @.claude/rules/rejected.md
+
+## Storybook testing
+
+When testing changes in Storybook, don't touch the already running Storybook instance. If you need to restart it, run it on a different port. If that's not necessary, you can use the one that's already running.

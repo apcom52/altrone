@@ -1,11 +1,11 @@
-# useConfiguration — Config Slices (core)
+# useConfiguration — Removed (core)
 
-Every component can read a config slice via `useConfiguration()`, populated by the `config` prop passed to `<AltroneApplication>`. `ComponentConfiguration<ExtraProps>` is the generic type for all config slices, defined in `ConsumerConfigurationContext`.
+`useConfiguration()`/`<Configuration>`/the `config` prop on `<Application>` are gone. Removed as dead code, not deprecated — do not reintroduce them, and do not read from or write to `AltroneConfiguration.context.ts` (that file no longer exists).
 
-```ts
-const { button: buttonConfig = {} } = useConfiguration();
-```
+**Why removed**: the backing context file had already been deleted from the repo while `Application.types.ts` and `useLocale.ts` still imported from it — a broken import in `main`, invisible until something tried to resolve it. Auditing actual usage found the mechanism's only real consumers were tests (`vitest/*.test.tsx`, one file per component) asserting `className`/`style` merging — exactly the legacy pattern `components.md` already flags as being phased out, not the semantic/global-setting use case (locale, date format) the mechanism was originally meant for. Nothing in `src` actually read a config slice for semantic settings either. See `application-provider.md`.
 
-**Scope this to semantic/global settings** (e.g. locale, date format, and similar app-wide defaults) — not to `className`/`style`. Merging `className`/`style` from `useConfiguration()` is a legacy pattern still present in some components (e.g. `Button`) that is being phased out; don't add it to new components. See `components.md` for the current guidance on `className`/`style`.
+**If a component needs a per-instance style override**, that's `className`/`style` passed directly as props — not a global config slice.
 
-**Always merge consumer config last** so it overrides internal defaults, for the settings that do belong here.
+**If a component needs a semantic/global default** (locale, date format, and similar app-wide settings), that's an explicit prop on `<Application>` (see `language`/`customLabels`) or a dedicated hook, not a generic config-slice system — ask before adding a new one rather than reviving `useConfiguration`.
+
+Several other components' test files (`vitest/icon.test.tsx`, `text.test.tsx`, `list.test.tsx`, `button.test.tsx`, `search.test.tsx`, `textarea.test.tsx`, `closeButton.test.tsx`, `colorPicker.test.tsx`, `datePicker.test.tsx`, `dropdown.test.tsx`, `passwordInput.test.tsx`, `autocompleteInput.test.tsx`) still have a `check that X configuration works` case exercising the same dead mechanism and are currently failing — not cleaned up yet, that's separate follow-up work per component, not part of this removal.

@@ -29,7 +29,7 @@ ComponentName/
   ```ts
   clsx(s.Button, { [s.Primary]: severity === 'primary' }, className)
   ```
-- `useConfiguration()` is being phased out as a source of `className`/`style` — do NOT add new `className`/`style` merging through it (existing components like `Button` still do this; don't copy that part when writing new code). See `configuration.md` for what `useConfiguration()` is still for
+- `useConfiguration()` has been removed entirely (dead code, see `configuration.md`) — don't reintroduce a global config-slice mechanism for `className`/`style`. A few existing components' tests still assert the old behavior; that's leftover cleanup, not a pattern to copy
 - Deprecated props are not removed outright — flag them with `GlobalUtils.deprecatedMessage('ComponentName', 'oldProp', 'newProp', 'targetVersion')` inside a `useEffect`, and keep them working until that version
 - Add `size` (`mini/s/m/l/xl`) and `asChild` (custom renderer support) props where they make sense for the component
 

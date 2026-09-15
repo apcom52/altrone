@@ -2,7 +2,7 @@
 
 1. Create `src/components/ComponentName/` with the full folder layout (see `components.md`).
 2. Define all props in `ComponentName.types.ts`, extending `BasicComponentStyleConfig`.
-3. If the component needs semantic/global config (not `className`/`style` — see `configuration.md`), add a config slice to `ConsumerConfigurationContext` in `AltroneConfiguration.context.ts` and read it via `useConfiguration()`.
+3. `useConfiguration()` has been removed (see `configuration.md`) — a component needing a semantic/global default should get an explicit prop on `<Application>` or a dedicated hook instead; ask before adding a new cross-component config mechanism.
 4. Write SCSS using CSS vars and mixins only (see `theming.md`).
 5. Add keys to all five locale files (see `localization.md`).
 6. Export from `src/components/index.ts`.
