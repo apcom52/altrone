@@ -23,7 +23,7 @@ ComponentName/
 
 - `ref` is accepted as a plain prop and forwarded to the root DOM element — see `ref-forwarding.md` (this replaces the older `forwardRef` + `memo` pattern still seen in some existing components; don't copy `forwardRef` into new code)
 - Components with sub-components are exported as a namespace object — see `namespace-exports.md`
-- Support a `renderFunc` prop that lets consumers override the rendered root element; provide a sane default render function in the same file
+- Support an `asChild` prop (Radix Slot polymorphism) that merges the component's props/ref onto a single child element instead of rendering its own root element, for consumers who need a fully custom root (e.g. a router `<Link>`). `renderFunc` (a custom render-function prop, the pattern `asChild` replaced) has been removed everywhere — don't reintroduce it; `asChild` is the only polymorphism mechanism going forward
 - Internal-only props consumed by the component itself (e.g. `showLabel`, `leftIcon`) must be stripped from `restProps` before spreading onto the DOM node
 - Class names are built with `clsx`, combining the CSS module object (`s`) with conditional flags:
   ```ts

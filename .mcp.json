@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "plumb": {
+      "command": "node",
+      "args": [
+        "/Users/apcom/.nvm/versions/node/v20.12.2/lib/node_modules/plumb-mcp/dist/index.js"
+      ],
+      "env": {
+        "FIGMA_TOKEN": "figd_your_read_only_token"
+      }
+    }
+  }
+}

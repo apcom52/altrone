@@ -7,7 +7,7 @@ const t = useLocalization();
 <span>{t('componentName.label')}</span>
 ```
 
-Add new keys to all five dictionaries in `src/locales/`: `en`, `ru`, `fr`, `ge`, `sp`.
+Add new keys to all eight dictionaries in `src/locales/`: `en`, `ru`, `fr`, `de`, `es`, `zh`, `pt`, `tr`.
 
 ## Don't
 

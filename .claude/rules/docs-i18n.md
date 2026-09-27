@@ -37,4 +37,5 @@ export async function getDocContent(slug: string, locale: string) {
 
 - Files in both languages must have the **same structure** (same headings, same code blocks)
 - Custom syntax elements (callouts, code fences) are identical across languages — only the text inside is translated
+- **Examples are always in English, in both locales**: code snippets, demo components (`docs/demo/**` — button labels, placeholders, messages) and any sample text inside them. Only the surrounding prose and `caption`s are translated.
 - File names are always in English regardless of language (`content/ru/getting-started.md`, not `content/ru/nachalo-raboty.md`)

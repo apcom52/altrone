@@ -1,0 +1,7 @@
+core/node_modules
+core/storybook-static
+core/__snapshots__
+mcp/dist
+mcp/node_modules
+docs/node_modules
+docs/.next

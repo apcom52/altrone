@@ -130,6 +130,27 @@ ColorPicker: renderFunc?: (props: ColorPickerRenderProps) => ReactElement
 (`neutral | accent | info | success | warning | danger`), `Result.status='error'` → `danger`,
 `Label.color` разделить на `tone` + `color` как в `Box`, булев `danger` задепрекейтить.
 
+**Решено (2026-09-17):**
+
+- **`error` vs `danger` — не переименовываем.** `danger` описывает *опасное действие*
+  (деструктивная кнопка, необратимый чекбокс), `error` описывает *статус/результат*.
+  Это разная семантика, а не два имени одного и того же — `Result.status='error'`
+  остаётся как есть, П. B1 закрыт без изменений в `Result`.
+- **`Message.severity`** → `'default' | 'info' | 'success' | 'warning' | 'danger'`
+  (добавлен `info`, `primary` убран — не статус).
+- **`Notifications`**: проп `variant` → переименовать в `severity`; значения расширить
+  до `'default' | 'info' | 'success' | 'warning' | 'danger'` (тот же словарь, что у
+  `Message.severity` — заодно снимает несовпадение имени пропа между Message и Toast).
+- **`BoxTone`**: значение `'neutral'` → переименовать в `'default'` (`'default' | 'accent' |
+  'info' | 'success' | 'warning' | 'danger'`) — приводит `Box` к тому же слову «нейтральный»,
+  что уже используют `Message.severity`/`Notifications.severity`/`Text.color`. `'accent'`
+  пока не трогаем — это отдельный вопрос B2 (`Role.primary` vs `BoxTone.accent`), не решён.
+- **`Label.color` / `Text.color` — имя `color` корректно, не переименовываем в `tone`
+  и не разделяем на `tone`+`color` (в отличие от `Box`).** Правка только для `Text`:
+  добавить значение `'default'` и сделать его значением по умолчанию (сейчас дефолта нет).
+- **Булев `danger`** (`Button`, `Checkbox`, `Dropdown.Action`, `NotificationAction`) —
+  подтверждён как корректный: помечает опасное действие, а не статус, депрекейтить не нужно.
+
 ---
 
 ## C. Открытое/закрытое состояние
@@ -233,6 +254,11 @@ NumberInput.onChange(value?, e?)                        // опционален 
 `Modal.size="l"` и `Button.size="l"` означают принципиально разное. `target-architecture`
 трактует `Size` как тир контрола — `Modal`/`Screen` его переиспользуют не по назначению.
 
+**Решение:** `size` остаётся только тиром контрола (`Size`, как в target-architecture).
+`Modal.size` → `width` (отдельный тип, не `Size`), `Screen.size` → `width` аналогично,
+`Grid.Column.size` → `span` (снимает коллизию, совпадает с общей grid-терминологией).
+`Loading.size` и `Text.size` не трогаем.
+
 🟡 **E2. Типы габаритных пропов не согласованы:**
 
 ```ts
@@ -251,19 +277,38 @@ Select:     menuHeight              ?: number            // px
 Пять разных типов для «задать размер». `number | string` (число = px) — самый частый,
 имеет смысл сделать его единственным.
 
-🟡 **E3. `BadgeSize` дублирует `Size`.** `internal/badge/Badge.types.ts` объявляет
-`export type BadgeSize = 'mini' | 's' | 'm' | 'l' | 'xl'` вместо импорта `Size` из `types`.
+**Решение:** расширить до `number | string` (число = px, строка — сырое CSS-значение):
+`Skeleton.width/height/minWidth/…`, `Drawer.width`, `Screen.sidebarWidth/asideWidth`,
+`Select.menuHeight`, `Scrollable.maxHeight` (вместо `CSSProperties['maxHeight']`).
+Все правки — расширение типа, не ломают существующие вызовы.
+
+Завести общий тип `Dimension = number | string` в `types/entity.ts` (+ реэкспорт из
+`types/index.ts`) вместо повторяющегося инлайн-юниона в 8+ местах.
+
+**Исключение: `DataTable.column.width` остаётся `number`.** Он прокидывается напрямую
+в TanStack Table `ColumnDef.size` (`useDataTableColumns.tsx:32`), которое типизировано
+как `number` и используется TanStack арифметически (resize-перетаскивание, `getSize()`,
+`getTotalSize()`, ширины `<col>`) — строка сломает эту механику. Поддержать `string`
+означало бы вести параллельный CSS-слой поверх `size`, что порождает рассинхронизацию
+при resize — это отдельная задача, не часть переименования. Задокументировать причину
+комментарием в `DataTable.types.ts`.
+
+🟡 **E3. `BadgeSize` дублирует `Size`.** ✅ Исправлено — `Badge.types.ts` импортирует
+`Size` из `types` вместо собственного алиаса.
 
 🟢 **E4. `Avatar` — единственный компонент с `size`, у которого нет дефолта `'m'`**
-в деструктуризации (`size` остаётся `undefined`, дефолт задан только в CSS).
+в деструктуризации. ✅ Исправлено — `size = 'm'` задан явно в `Avatar.tsx`.
 
 🟡 **E5. Компоненты без `size`, где он напрашивается:** `Tabs`, `Tags`, `Breadcrumbs`,
-`Pagination`, `Message`, `Textarea`, `NumberInput`, `PasswordInput`, `Search`,
-`AutocompleteInput`, `DatePicker`, `Divider`, `SideNavigation`, `BottomNavigation`.
+`Pagination`, `Message`, `Divider`, `SideNavigation`, `BottomNavigation`.
 `new-component-checklist.md` требует `size` «где имеет смысл» — для inputs-семейства
-(`NumberInput`/`PasswordInput`/`Search`/`AutocompleteInput`/`Textarea`) он приходит
-из `TextInputProps`, но `DatePicker` его явно `Omit`-ит, а `Tabs`/`Pagination`/`Message`
-не имеют вовсе.
+(`NumberInput`/`PasswordInput`/`Search`/`AutocompleteInput`/`Textarea`/`DatePicker`)
+он приходит из `TextInputProps` и уже работает.
+
+*Актуализация (2026-09-17): `DatePicker` больше не `Omit`-ит `size` — в текущем
+`BasicDatePickerProps` (`Omit<TextInputProps, 'value' | 'onChange' | 'ref' | 'children'>`)
+`size` не исключён и наследуется как у остального inputs-семейства. Предыдущая
+формулировка была устаревшей.*
 
 ---
 
@@ -497,6 +542,14 @@ export interface SplitterPanelProps {
 публичного API, и исправляется он **без** ломающих изменений — но только если сделать
 это до релиза, иначе потом придётся доносить типы вразнобой.
 
+**Решено (2026-09-18): экспортировано.** Все 39 компонентов теперь реэкспортируют свой главный
+`*Props` из `index.ts`, по образцу уже экспортировавших 13 — заодно добавлены пропы публичных
+подкомпонентов (`ToolbarActionProps`, `NavigationListLinkProps`, …) и вспомогательные типы,
+входящие в публичную сигнатуру (`ModalContext`/`DrawerContext`/`ProgressContext` как параметр
+render-функций, `FilePickerUploadContext`/`FilePickerRemoveContext`, `IslandPlacement`).
+Внутренние типы вне публичного API (`FormContextType`, `FilePickerContextType`, `FileProps`)
+не тронуты. См. changelog `18-сентября.md`.
+
 🟡 **K2. Вспомогательные типы, на которые ссылаются публичные пропы, тоже не экспортированы:**
 
 ```ts
@@ -627,44 +680,162 @@ Dropdown.RadioItem  vs  Radio.Item
 
 ## M. Оверлеи: Modal / Drawer / Popover / Dropdown / Tooltip
 
-Пять компонентов с одинаковой сутью «триггер + всплывающая панель» и пятью разными контрактами.
+*Актуализация (2026-09-20): после переноса `Modal`/`Drawer` на общий внутренний примитив
+`internal/sheet` (`Sheet`, добавлен и внедрён 18 сентября — см. `changelogs/v4/2026-09/18-сентября.md`)
+и после унификации `renderFunc` → `asChild` (раздел A) часть пунктов ниже закрыта. Актуальное
+состояние сведено в таблицу и пункты M1–M4; исходная формулировка «пять компонентов, пять разных
+контрактов» больше не совсем точна — по факту сейчас две архитектурные семьи: `Modal`/`Drawer`
+(edge-панель поверх backdrop, оба — тонкая обёртка над `Sheet`, который сам построен на `Box`) и
+`Popover`/`Dropdown` (заякоренный попап на floating-ui, `Dropdown` наследует `PopoverProps`);
+`Tooltip` — особняком в обоих смыслах. Публичные контракты при этом всё ещё разные, поэтому раздел
+не закрывается целиком, только его отдельные пункты.*
 
 | | `Modal` | `Drawer` | `Popover` | `Dropdown` | `Tooltip` |
 |---|---|---|---|---|---|
-| Триггер | `children?` | `children` (обяз.) | `children` (обяз.) | `children` (обяз., **только функция**) | `children?` |
-| Содержимое | `content` (обяз.) | `content?` | `content` (обяз.) | `content` (**только функция**) | `content` (обяз.) |
-| Render-prop тип | `ModalRenderProp<T>` | `DrawerRenderProp<T>` | `ReactElement \| CustomRenderFunction` | `RenderFunction<ReactNode, Ctx>` | — |
-| Uncontrolled open | `openedByDefault` | — | `openedByDefault` | (из `Popover`) | — |
+| Триггер | `children?` | `children` (обяз.) | `children` (обяз.) | `children` (обяз.) | `children?` |
+| Содержимое | `content` (обяз.) | `content?` | `content` (обяз.) | `content` (обяз.) | `content` (обяз.) |
+| Render-prop тип | `RenderFunction<ReactElement, ModalContext>` | `RenderFunction<ReactElement, DrawerContext>` | `ReactElement \| CustomRenderFunction<Ctx>` | `RenderFunction<ReactNode, Ctx>` | — |
+| Uncontrolled open | `defaultOpen` | `defaultOpen` | `defaultOpen` | (из `Popover`) | — |
 | Выключение | `enabled` | — | `enabled` | (из `Popover`) | — |
 | Закрытие | `onClose()` | `onClose()` | `onOpenChange(open, e, reason)` | (из `Popover`) | — |
-| Метод в контексте | `closeModal` | `closeDrawer` | `closePopup` / `closeAllSequence` | (из `Popover`) | — |
-| Кнопка закрытия | `showCancelButton` | всегда | `showCloseButton` | — | — |
-| Размер | `size: Size` | `width: number` | `parentWidth: boolean` | (из `Popover`) | `maxWidth` |
-| Футер | — (`actions`, `leftActions`) | `footer`, `startActions`, `endActions`, `onDone` | — | — | — |
+| Метод в контексте | `closeModal` → **решено: `hide`** | `closeDrawer` → **решено: `hide`** | `closePopup`/`closeAllSequence` → **решено: `hide`/`hideAllSequence`** | (из `Popover`) | — |
+| Крестик в шапке | — (нет пропа, всегда показан) → **решено: `showCloseButton`** | `showCloseButton` | `showCloseButton` | — | — |
+| Кнопка «Cancel» в футере | `showCancelButton` | — | — | — | — |
+| Размер | `size: Size` (маппится на `Sheet.width` внутри) | `width: number` | `parentWidth: boolean` | (из `Popover`) | `maxWidth` |
+| Футер | `actions`, `additionalActions` | `footer`, `actions`, `additionalActions`, `onDone` | — | — | — |
 | Заголовок | `title` | `title` | `title` | (из `Popover`) | `title` |
 
-🔴 **M1. Четыре разных типа render-prop'а для «содержимое или функция от контекста»:**
+**Что изменилось с прошлого прохода:**
 
-```ts
-utils/types.ts:  RenderFunction<Return, Args> = Return | ((data: Args) => Return)
-utils/types.ts:  CustomRenderFunction<Args>   = (data: Args) => ReactNode
-types/types.ts:  RenderFuncProp<El, Props>    = (ref, props) => JSX.Element
-Modal.types.ts:  ModalRenderProp<T>           = T | ((ctx: ModalContext) => T)     // локальная копия RenderFunction
-Drawer.types.ts: DrawerRenderProp<T>          = T | ((ctx: DrawerContext) => T)    // ещё одна копия
-```
+- **Триггер/Содержимое у `Dropdown` — уже не «только функция».** `DropdownProps.children`/`content`
+  теперь используют общий `RenderFunction<Return, Args> = Return | ((data: Args) => Return)`, то
+  есть, как и у `Modal`/`Drawer`, допускают обычный `ReactNode` наравне с функцией от контекста.
+- **`Uncontrolled open` унифицирован.** `openedByDefault` везде заменён на `open`/`defaultOpen`
+  (`Modal`, `Drawer`, `Popover`) — обычная React-конвенция, закрывает пункт C2 для всех трёх
+  компонентов этого раздела (`Spoiler` вне `M`, там `openedByDefault` пока не трогали).
+  Заодно `Drawer` из некотролируемого-без-альтернативы стал полноценно uncontrolled (`defaultOpen`
+  раньше отсутствовал вовсе — строка была «—»).
+- **`Кнопка закрытия`: `Drawer` больше не «всегда».** `Drawer.showCloseButton` (дефолт `true`) —
+  тот же нейминг, что уже был у `Popover`, и то же поведение (опциональный тумблер, а не жёстко
+  зашитая кнопка). Проверка по коду (`Modal.tsx`) показала, что старая формулировка предыдущего
+  прохода про `Modal.showCancelButton` была неточной: это не крестик закрытия (тот в `Modal`
+  вообще не имеет своего пропа и рендерится безусловно), а настоящая кнопка **«Cancel» в футере**
+  (`<Button label={t('common.cancel')} .../>`, рядом с `actions`) — название у неё уже корректное.
+  Разница между `Modal` и `Drawer`/`Popover` в другом: у `Modal` просто нет `showCloseButton` для
+  своего крестика. См. M3 ниже.
+- **`Футер`: `Modal.leftActions` → `additionalActions`, `Drawer.startActions`/`endActions` →
+  `additionalActions`/`actions`.** Оба компонента теперь используют одинаковые имена
+  (`actions` — основные, `additionalActions` — вторичные, на противоположной стороне футера).
+  Это прямо закрывает часть пункта **H1** («Modal/Drawer/Toolbar — три вокабуляра для
+  „слева/справа в шапке“») для пары `Modal`/`Drawer` — `Toolbar.Leading`/`Center`/`Trailing`
+  остаётся третьим вокабуляром, так что H1 стоит перепроверить отдельно, здесь не переоценивался.
 
-`ModalRenderProp` и `DrawerRenderProp` — буквально `RenderFunction` с зафиксированным контекстом.
+**Решено и реализовано в коде (2026-09-20)** — в отличие от многих других «Решено»-пунктов
+в этом документе, M1–M4 не только приняты, но и внедрены в этом же проходе (`core`, changelog
+`20-сентября.md`, mcp-доки и `docs/content/ru` обновлены следом, см. `sync-core-docs-mcp.md`):
 
-🔴 **M2. Метод закрытия в контексте назван четырьмя способами:**
-`closeModal` / `closeDrawer` / `closePopup` / `closeAllSequence`, плюс
-`Select.clearValue`, `DatePicker.clear`, `Notifications.dismiss`.
+- **M1. Единый render-prop тип — `RenderFunction`, `CustomRenderFunction` удаляется.**
+  `Popover.children`/`content` переводятся с ручного `ReactElement | CustomRenderFunction<Ctx>`
+  на общий `RenderFunction<ReactElement, Ctx>` — по форме это то же самое (значение или функция
+  от контекста), только через уже принятый в `Modal`/`Drawer`/`Dropdown` тип. После переноса
+  `CustomRenderFunction` не остаётся ни одного потребителя — удаляется из `utils/types.ts` как
+  мёртвый тип (заодно поправить пример в `components/popover/ROADMAP.md:115`, который сейчас
+  тоже ссылается на `CustomRenderFunction` для будущего пропа `footer`). Итог: `Modal`, `Drawer`,
+  `Popover`, `Dropdown` — один тип render-prop'а на всех.
 
-🟡 **M3. `showCancelButton` (Modal) vs `showCloseButton` (Popover).** Одна кнопка, два имени,
-причём в `Modal` это именно крестик закрытия, а не «Cancel».
+- **M2. Контекстные методы закрытия → `hide`/`hideAllSequence`; методы сброса значения → `clear`;
+  `dismiss` не переименовываем.**
+  - `ModalContext.closeModal` → `hide`; `DrawerContext.closeDrawer` → `hide`;
+    `PopoverChildrenContext.closePopup` → `hide`; `PopoverContentContext.closePopup` → `hide`,
+    `closeAllSequence` → `hideAllSequence`. Это выравнивает контекстные методы с уже принятым
+    неймингом `controlRef`-методов `Popover` (`show`/`hide`, `imperative-apis.md`) и со
+    `Splitter`'s `collapse`/`expand` — один и тот же глагол для «спрятать» что в контексте, что
+    в императивном рефе, вместо двух параллельных словарей внутри одного `Popover`.
+  - `Select.clearValue` (`SelectContextValue`) → `clear`, чтобы совпадать с уже корректным
+    `DatePickerTriggerContextType.clear`. Единственная правка — `Select` подтягивается
+    к уже правильному имени, а не наоборот.
+  - `Notifications.dismiss`/`dismissNotification` — **не переименовываем в `close`.**
+    `imperative-apis.md` уже фиксирует конвенцию для глобальных функций: `show<Thing>` /
+    предметный глагол-антоним (`dismiss<Thing>`, явно не `hide<Thing>`) — это другой механизм
+    (module-level функции, а не контекст/`controlRef`), и `dismiss` там семантически точнее:
+    уведомление не «закрывают», оно само исчезает или его «отклоняют». Переименование в `close`
+    внесло бы новый разнобой с уже задокументированным и используемым правилом вместо того, чтобы
+    его убрать — `event-handlers.md` тоже явно ссылается на `dismiss<Thing>` как канон.
 
-🟡 **M4. `Tooltip` выпадает из общей типизации.** Единственный компонент, чей `Props`
-не расширяет `HTMLAttributes` и объявляет `className`/`style` вручную —
-значит, не принимает `id`, `aria-*`, `data-*`, обработчики событий.
+  После этой правки `event-handlers.md` (пример `Select`'s `useSelectContext().clearValue`) и
+  `imperative-apis.md` (пример `Popover.open` state) продолжают быть корректны по смыслу, но
+  первый стоит обновить отдельно, когда/если `clearValue` переименуют в коде — пример там устареет
+  буквально по имени метода.
+
+- **M3. `showCloseButton` заводится и у `Modal`, `showCancelButton` остаётся — это два разных
+  элемента, не один и тот же под двумя именами.** Разбор `Modal.tsx` показал, что `Modal` уже
+  корректно называет свою кнопку «Cancel» (`showCancelButton`, футер) — спутанным с крестиком она
+  не была, просто у самого крестика (`CloseButton` в шапке) пропа вообще нет, он рендерится
+  безусловно. Целевой набор:
+  - `Modal`: `showCloseButton` (новый проп, гейтит крестик в шапке, по аналогии с `Drawer`/
+    `Popover`) **и** `showCancelButton` (существующий, гейтит кнопку «Cancel» в футере —
+    у `Drawer`/`Popover` аналога этой кнопки нет, поэтому проп остаётся только у `Modal`).
+  - `Drawer`: `showCloseButton` — без изменений, уже так называется.
+  - `Popover`: `showCloseButton` — без изменений, уже так называется.
+  Дефолт для нового `Modal.showCloseButton` — `true` (сохраняет текущее поведение «крестик всегда
+  виден», пока явно не выключат).
+
+- **M4. Типизация `TooltipProps`.** Вместо ручных `className?: string; style?: CSSProperties;`
+  переходим на `Omit<HTMLAttributes<HTMLElement>, 'title' | 'content' | 'children'>` (тот же
+  паттерн `Omit`, что уже используют `Modal`/`Drawer`/`Popover` — `title`/`content`/`children`
+  исключаются, потому что у `Tooltip` это свои семантические пропы, а не нативные HTML-атрибуты):
+
+  ```ts
+  export interface TooltipProps
+    extends Omit<HTMLAttributes<HTMLElement>, 'title' | 'content' | 'children'> {
+    ref?: Ref<HTMLElement>;
+    content: string | ReactElement;
+    title?: string;
+    kbd?: string;
+    maxWidth?: number | string;
+    children?: ReactNode;
+    triggerClassName?: string;
+    triggerStyle?: CSSProperties;
+    placement?: Placement;
+  }
+  ```
+
+  Даёт `id`/`aria-*`/`data-*`/нативные обработчики событий «бесплатно», закрывает M4 полностью —
+  `className`/`style` наследуются из `HTMLAttributes`, отдельно их объявлять больше не нужно.
+
+**Побочные находки при внедрении:**
+
+- **`ColorPicker`'s `asChild`-guard.** Ужесточение типа в M1 (`Popover.children`: с
+  `ReactElement | CustomRenderFunction<Ctx>` — по факту `ReactNode`-совместимого — на
+  `RenderFunction<ReactElement, Ctx>`) сделало нетипизируемым старый `return null;` в
+  `ColorPicker.tsx`'s guard «`asChild` requires a single valid React element as children». Не
+  просто заменено на `<></>` — `Popover.tsx` клонирует `ref`/`tabIndex`/interaction-пропы поверх
+  того, что вернула функция-`children`, а `React.Fragment` их принять не может (тихо потеряло бы
+  обработчики триггера). Заменено на `<span />` — пустой, но настоящий DOM-узел, поведение то же,
+  что было у `null` (который `Popover.tsx` тоже оборачивал в `<span>`), просто теперь оно проходит
+  через типы явно, а не случайно.
+- **`Dropdown.types.ts` — обнаружен отдельный, не связанный с M1–M4 баг типов.**
+  `DropdownProps.children`/`content` (`RenderFunction<ReactNode, Ctx>`) не удовлетворяют более
+  узкому `PopoverProps.children`/`content` (`RenderFunction<ReactElement, Ctx>`), который
+  `DropdownProps` переопределяет через `extends PopoverProps` — `tsc --noEmit` падает на
+  `Dropdown.tsx:58`/`Dropdown.types.ts:88`. Проверено через `git stash`: ошибка та же (только с
+  `CustomRenderFunction` в тексте) уже была на коммите до этой сессии — не регрессия M1, отдельная
+  задача. Не чинили — вне заявленного скоупа этого захода.
+
+**Новое, не покрытое прежней версией раздела:**
+
+**M5 — снято (2026-09-20), формулировка прошлого прохода была ошибочной.** Первая версия этого
+пункта утверждала, что комментарий `Sheet.types.ts`'s `tone?: BoxTone` «defaults to `neutral`»
+устарел относительно решения по пункту B (`BoxTone.neutral` → `'default'`, 2026-09-17). Проверка
+по `core/src/components/box/Box.types.ts`/`Box.tsx` показала: **это решение B не реализовано в
+коде вообще** — `BoxTone` по-прежнему `'neutral' | 'accent' | 'danger' | 'success' | 'warning' |
+'info'`, `Box.tsx` дефолтит на `tone = 'neutral'`, и нигде в кодовой базе не встречается значение
+`'default'` для тона. Точно так же не реализован B-декизн `Notifications.variant` → `severity`
+(`Notifications.types.ts` всё ещё `variant`). Комментарий в `Sheet.types.ts` **корректен и
+актуален как есть** — менять там нечего. Практический вывод: пункты «Решено» в этом документе —
+это протокол принятого решения, а не подтверждение, что оно уже в коде; перед тем как опираться
+на такую запись при аудите смежного места, стоит сверяться с реальным файлом, а не с текстом
+самого `differences.md` (как это и произошло здесь на первом проходе).
 
 ---
 
@@ -711,6 +882,17 @@ splitterRef.current.collapse(0);        // через отдельный про�
 
 `Breadcrumbs.Item`, `Dropdown.Action` и `NavigationList.Link` используют **по два** механизма сразу.
 
+**Решено (2026-09-17): единственный механизм — `Slot`.** При разборе выяснилось, что
+`cloneWithRef` — не конкурент `Slot`, а его внутренний примитив (`Slot` сам вызывает
+`cloneWithRef` внутри); `DropdownAction`/`Breadcrumbs.Item`/`NavigationList.Link`/`Button`
+используют `cloneWithRef` только как промежуточный шаг («вклеить `children` в элемент
+консьюмера» перед тем, как внешний `Slot` мержит `ref`/`className`/`style`) — это корректный
+паттерн, не переделывался. Реальных обходов `Slot` было три: `Application`, `Text`,
+`BottomNavigation.Link` — переведены на `<Slot>`. Заодно перенесли в сам `Slot` мерж
+`className`/`style` (`clsx` + spread, ребёнок побеждает при конфликте), который раньше делал
+только `Text` вручную — без этого перевод `Text` на `Slot` стёр бы `className`/`style`
+консьюмерского корня. См. changelog `17-сентября.md`.
+
 🟡 **O2. `Box` внедрён только в 8 компонентов** из 52: `Button`, `ColorPicker`, `Message`,
 `Popover`, `Progress`, `TextInput`, `NotificationCard`, `internal/Badge`.
 Остальные держат собственные фон/границу/радиус/тень в своих `.module.scss`.
@@ -722,6 +904,34 @@ splitterRef.current.collapse(0);        // через отдельный про�
 **Не читают:** `Select`, `Checkbox`, `Switcher`, `Radio`, `ColorPicker`, `FilePicker`,
 `DatePicker`, `Range`, `AutocompleteInput`, `Search`, `PasswordInput`.
 То есть `<Form size="l" disabled>` не влияет на `Select` внутри неё.
+
+**Решено (2026-09-17): починено.** `AutocompleteInput`/`Search`/`PasswordInput` при
+проверке оказались ложным срабатыванием — они не вызывают `useFormField` сами, но
+рендерят `TextInput` и не трогают его `name`/`invalid`/`disabled`/`size`, так что
+резолюция `TextInput` уже транзитивно работает через них без правок.
+
+Реальных пробелов было пять — все закрыты явным вызовом `useFormField()`:
+- **`Checkbox`/`Switch`** — `name`/`disabled`/`size` резолвятся с фолбэком на форму
+  (был жёсткий дефолт `size = 'm'`, блокировавший фолбэк).
+- **`Radio`** — то же самое; фолбэк на `formFieldName` встал перед автогенерируемым
+  `useId()`, а не вместо него.
+- **`Select`** — резолвится в самом компоненте (не полагаясь на `TextInput`-триггер),
+  потому что `disabled`/`size` идут не только в визуал, но и в `SelectContext`
+  (клавиатурная навигация, hidden-инпуты) — раньше жёсткий дефолт `size='m'` и прямой
+  проброс `disabled` в `TextInput` делали фолбэк недостижимым.
+- **`ColorPicker`** — то же самое (`size`/`disabled` были захардкожены дефолтами).
+- **`DatePicker`/`DatePicker.MonthPicker`/`.YearPicker`** (через общий `generatePicker`)
+  **и `DatePicker.RangePicker`** (отдельная реализация с тем же багом) — только
+  `disabled` (был жёсткий дефолт `false`); `size` там уже наследуется через `restProps`.
+- **`Slider`** — `name`/`disabled`/`size` резолвятся явно (компонент не оборачивает
+  `TextInput`, транзитивного пути не было вообще).
+
+Заодно у `FilePicker` обнаружилось, что `disabled` отсутствовал как проп целиком —
+добавлен (`FilePicker.types.ts`, контекст `FilePickerContextType`), выключает файловый
+инпут, кнопку выбора файлов и кнопки retry/delete у каждого чипа (`inner/File.tsx`).
+
+Добавлены тесты в `vitest/form.test.tsx` (`Form disabled` → доходит до каждого из
+восьми контролов). См. changelog `17-сентября.md`.
 
 🟡 **O4. `invalid`/`aria-invalid` есть только у `TextInput`.**
 `accessibility.md` требует `aria-invalid` + `aria-describedby` для валидации форм —

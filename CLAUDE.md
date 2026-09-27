@@ -27,7 +27,9 @@ When adding a new sub-project to the workspace, add it to `repositories.ts` rath
 @.claude/rules/sync-core-docs-mcp.md
 @.claude/rules/docs-dsl.md
 @.claude/rules/docs-i18n.md
+@.claude/rules/docs-tabs.md
 @.claude/rules/mcp-server.md
+@.claude/rules/imperative-apis.md
 
 ## Rules (core / altrone-ui)
 
@@ -60,3 +62,7 @@ When adding a new sub-project to the workspace, add it to `repositories.ts` rath
 ## Storybook testing
 
 When testing changes in Storybook, don't touch the already running Storybook instance. If you need to restart it, run it on a different port. If that's not necessary, you can use the one that's already running.
+
+## Important rules
+
+- DO NOT WRITE COMMENTS. Only in rare cases when we describe a serious bug or workaround. Max 1-2 rows. Do not comment obvious things.

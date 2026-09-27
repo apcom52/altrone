@@ -10,7 +10,7 @@ Every change to public API or internal/architectural behavior (only in `core`) m
 - Each entry briefly covers:
   - **Что изменилось** — what changed
   - **Зачем** — the motivation/reason behind the change
-- Keep entries short — a few sentences, not a full diff narrative.
+- Keep entries short — a 1 sentence, not a full diff narrative. In rare cases - 2-3 sentences.
 
 Example entry (`altrone/changelogs/v4/2026-08/04-августа.md`):
 
