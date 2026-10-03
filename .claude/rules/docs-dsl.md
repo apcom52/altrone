@@ -85,6 +85,37 @@ Body text, code fences, `::playground{...}` — all supported.
 :::
 ```
 
+## Release block
+
+A spoiler for one major version on the "Change history" tab (see `docs-tabs.md`), split into two columns 4/12 and 8/12 (stacked on phones). The left column shows the component's logo and its name **as it was called in that version**; the right column is the regular Markdown body (the changes). `:::release[Title]` — the label is the always-visible spoiler title. Consecutive release blocks are wrapped automatically in a vertical `Flex` with no gap — don't group them by hand.
+
+```md
+:::release[Altrone 4 Decent Dragon]{icon="/logos/altrone-4.png" logo="Application" name="Application" open="true"}
+**4.0**
+
+- Added `asChild`.
+:::
+```
+
+| Attribute | Description |
+| --------- | ----------- |
+| `icon`    | Path to the release logo in `docs/public/logos/` (`/logos/altrone-N.png`), shown at 32×32 before the title. |
+| `logo`    | Export name from `altrone-ui/logos` (`Application`, `Button`, …), shown on a dark badge in both themes. Used for the current major (4). |
+| `image`   | Path to a picture in `docs/public/logos/` shown 72px tall (width follows the aspect ratio) with rounded corners instead of `logo`. Per-component version logos are named `<component>-<version>.png` (`/logos/text-2.png`); the Altrone release artwork is `/logos/altrone-N.png` (used for `Application`). |
+| — | With neither `image` nor `logo` (a version that has no logo) a neutral dashed placeholder with a generic icon is shown. |
+| `name`    | Component name shown under the logo — the historical name for that version (`AltroneApplication`, `Application`). |
+| `open`    | `"true"` expands the block by default. |
+
+### Removed component
+
+Inline text directive `:removed[text]` renders red, semibold text (`--danger-text-1`). Use it in a release block for the version in which the component was removed, instead of describing the removal:
+
+```md
+**3.0**
+
+- :removed[The component was removed.]
+```
+
 ## CSS variable cards
 
 A grid of visible cards (background, 1px border, rounded corners, generous padding), three per row (two on tablets, one on phones), documenting CSS custom properties. The outer `::::css-vars` (four colons — it nests) is the grid; each `:::css-var[--name]` is one card:

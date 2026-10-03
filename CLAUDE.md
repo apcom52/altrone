@@ -66,3 +66,9 @@ When testing changes in Storybook, don't touch the already running Storybook ins
 ## Important rules
 
 - DO NOT WRITE COMMENTS. Only in rare cases when we describe a serious bug or workaround. Max 1-2 rows. Do not comment obvious things.
+
+## Commit
+
+[ComponentA][ComponentB]: short description (no more than 80 chars). No co-authored.
+
+changelog change is not a separate commit
