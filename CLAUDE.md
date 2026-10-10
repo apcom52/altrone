@@ -30,6 +30,7 @@ When adding a new sub-project to the workspace, add it to `repositories.ts` rath
 @.claude/rules/docs-tabs.md
 @.claude/rules/mcp-server.md
 @.claude/rules/imperative-apis.md
+@.claude/rules/component-categories.md
 
 ## Rules (core / altrone-ui)
 
