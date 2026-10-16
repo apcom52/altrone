@@ -2,9 +2,8 @@
 
 - Unit tests: Vitest — `npm run test:unit`, test files live in the top-level `vitest/` folder (e.g. `vitest/button.test.tsx`), not colocated with the source
 - Every component needs a `ComponentName.stories.tsx` — see `storybook.md` for how stories should be written and kept in sync with changes
-- E2E: Cypress component tests, run against Chrome and Firefox — `npm run test:e2e-chrome`, `npm run test:e2e-firefox`
-- Visual snapshots are refreshed explicitly via `npm run test:e2e-chrome-refresh`, never by hand-editing snapshot files
-- Full pre-release gate (`npm run test:pre-release`) = unit + e2e-chrome + e2e-firefox — new components/changes should pass this before publishing
+- E2E / visual regression tests: none — Cypress was removed (it was abandoned and no longer matched the API)
+- Pre-release gate (`npm run test:pre-release`) = unit tests — new components/changes should pass this before publishing
 
 ## Unit test scope — quality over count
 
