@@ -185,6 +185,7 @@ Two side-by-side columns (stacked on phones) for do/don't guidance. `::::good-ba
 ::::
 ```
 
+- `::::good-bad{columns="1"}` stacks the two boxes in a single column instead of two side by side (default `columns="2"`). Use it when the examples are too wide for half the page, e.g. a long strip of controls.
 - Give each column a `caption` on its playground that says **why** it's good or bad, in one short phrase.
 - `:::good[Custom title]` overrides the header text.
 - Prefer live examples to code fragments — show the thing, don't describe it. Use a code fence only when the point is the code itself (e.g. an API shape).
